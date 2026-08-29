@@ -1,0 +1,65 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: db
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+      POSTGRES_DB: mydb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U myuser"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  vault:
+    image: hashicorp/vault:1.17
+    container_name: vault
+    environment:
+      VAULT_DEV_ROOT_TOKEN_ID: "root"
+      VAULT_DEV_LISTEN_ADDRESS: "0.0.0.0:8200"
+
+
+  vault-proxy:
+    image: nginx:alpine
+    container_name: vault-proxy
+    ports:
+      - "8200:80"
+    volumes:
+      - ./vault-proxy.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - vault
+
+  backend:
+    build: .
+    container_name: backend
+    image: skills-utilization-backend
+    ports:
+      - "8080:5000"
+    environment:
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=root
+      - DATABASE_URL=postgresql://myuser:mypassword@db:5432/mydb
+    depends_on:
+      db:
+        condition: service_healthy
+      vault:
+        condition: service_started
+
+  frontend:
+    image: nginx:alpine
+    container_name: frontend
+    ports:
+      - "5000:80"
+    volumes:
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./frontend:/usr/share/nginx/html:ro
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

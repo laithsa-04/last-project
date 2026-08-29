@@ -1,0 +1,12 @@
+services:
+  flask-app:
+    build: .
+    image: skills-utilization-backend
+    ports:
+      - "5000:5000"
+    environment:
+      - VAULT_ADDR=http://vault:8200
+      - VAULT_TOKEN=root
+    depends_on:
+      - app-db
+      - vault
