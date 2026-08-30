@@ -1,5 +1,4 @@
 name: Security Pipeline
-
 on:
   push:
     branches: [ "main" ]
@@ -7,11 +6,9 @@ on:
     branches: [ "main" ]
   schedule:
     - cron: '0 2 * * *'
-
 permissions:
   contents: read
   packages: write
-
 jobs:
   security-scan-and-deploy:
     runs-on: self-hosted
@@ -19,21 +16,16 @@ jobs:
     steps:
       - name: Checkout Code repository
         uses: actions/checkout@v3
-
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: '3.11'
-
       - name: Install Python Security Tools
         run: pip install bandit safety
-
       - name: Run Bandit (SAST Code Scan)
         run: bandit -r backend/ -ll -ii
-
       - name: Run Safety (Dependency Scan)
         run: safety check -r backend/requirements.txt --full-report
-
       - name: Run Trivy (Docker Container Scan)
         uses: aquasecurity/trivy-action@master
         with:
@@ -43,18 +35,16 @@ jobs:
           exit-code: '1'
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
-
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Build and Push Backend Image
         run: |
-          docker build --push -t ghcr.io/ahmedalkhouli/last_project-backend:latest -f backend/Dockerfile .
-
+          docker build -t ghcr.io/ahmedalkhouli/last_project-backend:latest -f backend/Dockerfile .
+          docker push ghcr.io/ahmedalkhouli/last_project-backend:latest
       - name: Deploy Secure Architecture
         run: |
           # 1. Switch out of the temporary runner clone and into the REAL project directory
