@@ -43,8 +43,8 @@ jobs:
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build and Push Backend Image
         run: |
-          docker build -t ghcr.io/ahmedalkhouli/last_project-backend:latest -f backend/Dockerfile .
-          docker push ghcr.io/ahmedalkhouli/last_project-backend:latest
+          docker build -t ghcr.io/${{ github.repository_owner }}/last_project-backend:latest -f backend/Dockerfile .
+          docker push ghcr.io/${{ github.repository_owner }}/last_project-backend:latest
       - name: Deploy Secure Architecture
         run: |
           # 1. Switch out of the temporary runner clone and into the REAL project directory
@@ -65,7 +65,7 @@ jobs:
           docker exec vault-server env VAULT_ADDR="http://127.0.0.1:8200" vault operator unseal $UNSEAL_KEY
           
           # 6. Pull the fresh GHCR image to the local machine
-          docker pull ghcr.io/ahmedalkhouli/last_project-backend:latest
+          docker pull ghcr.io/${{ github.repository_owner }}/last_project-backend:latest
           
           # 7. Fetch secrets and launch backend/frontend
           ./vault/start_secure.sh
