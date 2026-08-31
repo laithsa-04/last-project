@@ -1,9 +1,17 @@
 # Secrets and Keys
 .env
+.db.env
 vault/vault_keys.txt
+*.pem
+*.key
 
 # Vault Persistent Data
 vault/data/
+
+# Local dev overrides (never push)
+*.local.yml
+*.local.yaml
+docker-compose.override.yml
 
 # Python Cache and Environments
 __pycache__/
@@ -11,15 +19,8 @@ __pycache__/
 venv/
 .venv/
 
+# GitHub Actions runner install (machine-specific)
+actions-runner/
+
 # OS Files
 .DS_Store
-
-# Local Security & Vault Files (Never push to GitHub)
-vault/data/
-vault/vault_keys.txt
-vault/start_secure.sh
-.db.env
-actions-runner/
-actions-runner/
-vault/
-docker-compose.yaml
